@@ -1,0 +1,16 @@
+{
+  "name": "Research Crew",
+  "agents": ["researcher"],
+  "tasks": [
+    {
+      "name": "research_task",
+      "description": "Conduct thorough research about {topic}. Use web search to find recent, credible information.",
+      "expected_output": "A markdown report with clear sections: key trends, notable tools or companies, and implications. Aim for 800-1200 words. No fenced code blocks around the whole document.",
+      "agent": "researcher",
+      "output_file": "output/report.md",
+      "markdown": true
+    }
+  ],
+  "process": "sequential",
+  "verbose": true
+}
