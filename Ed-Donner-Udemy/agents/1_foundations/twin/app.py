@@ -4,12 +4,14 @@ from tools import tools, handle_tool_calls
 from styles import CSS, JS, EXAMPLES
 from dotenv import load_dotenv
 import gradio as gr
+import os
 
 load_dotenv(override=True)
 
-MODEL_NAME = "gpt-5.4-mini"
-
-openai = OpenAI()
+MODEL_NAME = "gemini-3.1-flash-lite"
+google_api_key = os.environ.get("GOOGLE_API_KEY")
+gemini_base_url = os.environ.get("GEMINI_BASE_URL")
+openai = OpenAI(api_key=google_api_key, base_url=gemini_base_url)
 
 system = [{"role": "system", "content": TWIN_SYSTEM_PROMPT}]
 
@@ -34,4 +36,10 @@ if __name__ == "__main__":
         title="Digital Twin",
         description="Talk to my AI twin about my career",
         chatbot=gr.Chatbot(show_label=False),
-    ).launch(css=CSS, js=JS, theme=gr.themes.Base())
+    ).launch(
+        css=CSS,
+        js=JS,
+        theme=gr.themes.Base(),
+        server_name="0.0.0.0",
+        server_port=int(os.environ.get("PORT", 7860)),
+    )
