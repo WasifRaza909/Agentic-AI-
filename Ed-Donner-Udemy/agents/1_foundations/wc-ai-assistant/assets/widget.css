@@ -1,0 +1,648 @@
+/**
+ * WC AI Assistant — storefront chat bubble.
+ *
+ * Scoped inside a shadow root, so no theme styles reach these rules and none of
+ * these rules escape onto the store.
+ *
+ * Palette: #5A2612 (brand) and #FFFFFF (surface). Everything else is a warm
+ * neutral derived from the brand hue, so the whole widget reads as one family
+ * rather than brown accents dropped onto a grey UI.
+ */
+
+:host,
+.wcai {
+	/* Brand */
+	--wcai-brand: #5A2612;
+	--wcai-brand-strong: #431B0C;
+	--wcai-on-brand: #FFFFFF;
+
+	/* Surfaces */
+	--wcai-surface: #FFFFFF;
+	--wcai-surface-sunken: #FBF8F6;
+	--wcai-surface-muted: #F4EDE9;
+
+	/* Ink */
+	--wcai-ink: #2A1409;
+	--wcai-ink-muted: #7C6459;
+
+	/* Lines */
+	--wcai-line: #ECE1DC;
+	--wcai-line-strong: #DCCBC3;
+
+	/* Spacing — 4px base grid */
+	--wcai-sp-1: 4px;
+	--wcai-sp-2: 8px;
+	--wcai-sp-3: 12px;
+	--wcai-sp-4: 16px;
+	--wcai-sp-5: 20px;
+
+	/* Radii */
+	--wcai-r-panel: 20px;
+	--wcai-r-msg: 16px;
+	--wcai-r-tail: 5px;
+
+	/* Elevation — layered rather than one soft blur */
+	--wcai-shadow-panel:
+		0 1px 2px rgba(42, 20, 9, 0.06),
+		0 8px 24px rgba(42, 20, 9, 0.10),
+		0 24px 56px rgba(42, 20, 9, 0.12);
+	--wcai-shadow-launcher:
+		0 2px 6px rgba(42, 20, 9, 0.18),
+		0 10px 28px rgba(90, 38, 18, 0.28);
+
+	--wcai-ease: cubic-bezier(0.16, 0.84, 0.44, 1);
+}
+
+.wcai,
+.wcai *,
+.wcai *::before,
+.wcai *::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+.wcai {
+	font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI",
+		Roboto, "Helvetica Neue", Arial, sans-serif;
+	font-size: 15px;
+	line-height: 1.55;
+	color: var(--wcai-ink);
+	-webkit-font-smoothing: antialiased;
+}
+
+.wcai-i {
+	display: block;
+	flex: 0 0 auto;
+}
+
+/* ================================================================ launcher */
+
+.wcai {
+	/* Overridden inline from the admin settings. */
+	--wcai-offset-bottom: 24px;
+	--wcai-offset-side: 24px;
+}
+
+.wcai-launcher {
+	position: fixed;
+	right: var(--wcai-offset-side);
+	bottom: var(--wcai-offset-bottom);
+	z-index: 2147483000;
+
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	width: 60px;
+	height: 60px;
+	padding: 0;
+
+	border: 0;
+	border-radius: 999px;
+	background: var(--wcai-brand);
+	color: var(--wcai-on-brand);
+	cursor: pointer;
+
+	box-shadow: var(--wcai-shadow-launcher);
+	transition: transform 0.22s var(--wcai-ease), background-color 0.2s ease;
+}
+
+.wcai--left .wcai-launcher {
+	right: auto;
+	left: var(--wcai-offset-side);
+}
+
+/*
+ * With a label the button becomes a pill that hugs its text. On open it drops
+ * back to a circle around the close cross — the panel covers the change, and
+ * it keeps the open state identical whichever style is configured.
+ */
+.wcai--both .wcai-launcher,
+.wcai--text .wcai-launcher {
+	width: auto;
+	height: 54px;
+	padding: 0 22px;
+}
+
+.wcai--text .wcai-launcher {
+	padding: 0 24px;
+}
+
+.wcai.is-open .wcai-launcher {
+	width: 60px;
+	height: 60px;
+	padding: 0;
+}
+
+.wcai-launcher-label {
+	font-size: 15px;
+	font-weight: 600;
+	letter-spacing: 0.01em;
+	white-space: nowrap;
+}
+
+.wcai.is-open .wcai-launcher-label,
+.wcai--text:not(.is-open) .wcai-launcher-glyphs {
+	display: none;
+}
+
+.wcai-launcher-glyphs {
+	display: grid;
+	place-items: center;
+	width: 24px;
+	height: 24px;
+}
+
+.wcai-launcher-img {
+	display: block;
+	width: 24px;
+	height: 24px;
+	object-fit: contain;
+}
+
+.wcai-launcher:hover {
+	background: var(--wcai-brand-strong);
+	transform: translateY(-2px);
+}
+
+.wcai-launcher:active {
+	transform: translateY(0) scale(0.96);
+}
+
+.wcai-launcher:focus-visible {
+	outline: 2px solid var(--wcai-brand);
+	outline-offset: 4px;
+}
+
+/* Both icons share one grid cell and cross-fade on open. */
+.wcai-launcher-icon {
+	grid-area: 1 / 1;
+	display: grid;
+	place-items: center;
+	transition: opacity 0.2s var(--wcai-ease), transform 0.24s var(--wcai-ease);
+}
+
+.wcai-launcher-icon--close,
+.wcai.is-open .wcai-launcher-icon--chat {
+	opacity: 0;
+	transform: rotate(-90deg) scale(0.7);
+}
+
+.wcai.is-open .wcai-launcher-icon--close {
+	opacity: 1;
+	transform: none;
+}
+
+/*
+ * The two sparkles twinkle on a long, offset cycle while the launcher is
+ * closed — enough motion to read as "AI", not enough to nag.
+ */
+.wcai-spark {
+	transform-box: fill-box;
+	transform-origin: center;
+}
+
+.wcai:not(.is-open) .wcai-launcher .wcai-spark--lg {
+	animation: wcai-twinkle 4.5s var(--wcai-ease) infinite;
+}
+
+.wcai:not(.is-open) .wcai-launcher .wcai-spark--sm {
+	animation: wcai-twinkle 4.5s var(--wcai-ease) 0.5s infinite;
+}
+
+@keyframes wcai-twinkle {
+	0%,
+	62%,
+	100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	72% {
+		opacity: 0.55;
+		transform: scale(0.78);
+	}
+	84% {
+		opacity: 1;
+		transform: scale(1.12);
+	}
+}
+
+/* =================================================================== panel */
+
+.wcai-panel {
+	position: fixed;
+	right: var(--wcai-offset-side);
+	bottom: calc(var(--wcai-offset-bottom) + 76px);
+	z-index: 2147483000;
+
+	display: flex;
+	flex-direction: column;
+	width: 384px;
+	max-width: calc(100vw - 32px);
+	height: 580px;
+	max-height: calc(100vh - var(--wcai-offset-bottom) - 116px);
+
+	overflow: hidden;
+	background: var(--wcai-surface);
+	border-radius: var(--wcai-r-panel);
+	box-shadow: var(--wcai-shadow-panel);
+
+	animation: wcai-rise 0.24s var(--wcai-ease);
+	transform-origin: bottom right;
+}
+
+.wcai--left .wcai-panel {
+	right: auto;
+	left: var(--wcai-offset-side);
+	transform-origin: bottom left;
+}
+
+.wcai-panel[hidden] {
+	display: none;
+}
+
+@keyframes wcai-rise {
+	from { opacity: 0; transform: translateY(12px) scale(0.98); }
+	to   { opacity: 1; transform: none; }
+}
+
+/* ================================================================== header */
+
+.wcai-header {
+	display: flex;
+	align-items: center;
+	gap: var(--wcai-sp-3);
+	padding: var(--wcai-sp-4) var(--wcai-sp-4) var(--wcai-sp-4) var(--wcai-sp-5);
+	background: var(--wcai-brand);
+	color: var(--wcai-on-brand);
+}
+
+.wcai-avatar {
+	display: grid;
+	place-items: center;
+	flex: 0 0 auto;
+	border-radius: 50%;
+}
+
+.wcai-avatar--header {
+	width: 36px;
+	height: 36px;
+	background: rgba(255, 255, 255, 0.14);
+	color: var(--wcai-on-brand);
+}
+
+.wcai-identity {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-width: 0;
+	gap: 1px;
+}
+
+.wcai-name {
+	font-size: 15px;
+	font-weight: 600;
+	letter-spacing: -0.01em;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.wcai-status {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 12px;
+	line-height: 1.3;
+	color: rgba(255, 255, 255, 0.72);
+}
+
+.wcai-pip {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: #6FD68F;
+	box-shadow: 0 0 0 2.5px rgba(111, 214, 143, 0.22);
+}
+
+.wcai-iconbtn {
+	display: grid;
+	place-items: center;
+	width: 32px;
+	height: 32px;
+	flex: 0 0 auto;
+
+	border: 0;
+	border-radius: 8px;
+	background: transparent;
+	color: rgba(255, 255, 255, 0.78);
+	cursor: pointer;
+
+	transition: background-color 0.16s ease, color 0.16s ease;
+}
+
+.wcai-iconbtn:hover {
+	background: rgba(255, 255, 255, 0.14);
+	color: var(--wcai-on-brand);
+}
+
+.wcai-iconbtn:focus-visible {
+	outline: 2px solid var(--wcai-on-brand);
+	outline-offset: 1px;
+}
+
+/* ===================================================================== log */
+
+.wcai-log {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+
+	display: flex;
+	flex-direction: column;
+	gap: var(--wcai-sp-3);
+	padding: var(--wcai-sp-5) var(--wcai-sp-4);
+
+	background: var(--wcai-surface-sunken);
+	scrollbar-width: thin;
+	scrollbar-color: var(--wcai-line-strong) transparent;
+}
+
+.wcai-log::-webkit-scrollbar {
+	width: 8px;
+}
+
+.wcai-log::-webkit-scrollbar-thumb {
+	background: var(--wcai-line-strong);
+	border: 2px solid var(--wcai-surface-sunken);
+	border-radius: 99px;
+}
+
+.wcai-row {
+	display: flex;
+	align-items: flex-end;
+	gap: var(--wcai-sp-2);
+	max-width: 88%;
+}
+
+.wcai-row--user {
+	align-self: flex-end;
+	flex-direction: row-reverse;
+}
+
+.wcai-row--assistant {
+	align-self: flex-start;
+}
+
+.wcai-avatar--msg {
+	width: 26px;
+	height: 26px;
+	margin-bottom: 2px;
+	background: var(--wcai-surface-muted);
+	color: var(--wcai-brand);
+}
+
+/* ================================================================ messages */
+
+.wcai-msg {
+	padding: 10px 14px;
+	font-size: 14.5px;
+	line-height: 1.55;
+	border-radius: var(--wcai-r-msg);
+	overflow-wrap: anywhere;
+}
+
+.wcai-row--assistant .wcai-msg {
+	background: var(--wcai-surface);
+	color: var(--wcai-ink);
+	border: 1px solid var(--wcai-line);
+	border-bottom-left-radius: var(--wcai-r-tail);
+}
+
+.wcai-row--user .wcai-msg {
+	background: var(--wcai-brand);
+	color: var(--wcai-on-brand);
+	border-bottom-right-radius: var(--wcai-r-tail);
+}
+
+.wcai-msg p + p {
+	margin-top: var(--wcai-sp-2);
+}
+
+.wcai-msg ul {
+	margin: var(--wcai-sp-2) 0;
+	padding-left: 18px;
+}
+
+.wcai-msg li {
+	margin-bottom: var(--wcai-sp-1);
+}
+
+.wcai-msg li::marker {
+	color: var(--wcai-brand);
+}
+
+.wcai-msg strong {
+	font-weight: 650;
+}
+
+.wcai-msg a {
+	color: var(--wcai-brand);
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+	text-decoration-thickness: 1px;
+}
+
+.wcai-row--user .wcai-msg a {
+	color: var(--wcai-on-brand);
+}
+
+/* ================================================================== typing */
+
+.wcai-typing {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	padding: 14px;
+}
+
+.wcai-typing span {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--wcai-ink-muted);
+	animation: wcai-pulse 1.25s infinite ease-in-out;
+}
+
+.wcai-typing span:nth-child(2) { animation-delay: 0.16s; }
+.wcai-typing span:nth-child(3) { animation-delay: 0.32s; }
+
+@keyframes wcai-pulse {
+	0%, 70%, 100% { opacity: 0.28; transform: translateY(0); }
+	35%           { opacity: 1;    transform: translateY(-3px); }
+}
+
+/* ================================================================ composer */
+
+.wcai-composer {
+	display: flex;
+	align-items: center;
+	gap: var(--wcai-sp-2);
+	padding: var(--wcai-sp-3) var(--wcai-sp-4) var(--wcai-sp-2);
+	background: var(--wcai-surface);
+	border-top: 1px solid var(--wcai-line);
+}
+
+.wcai-input {
+	flex: 1;
+	min-width: 0;
+	height: 44px;
+	padding: 0 var(--wcai-sp-4);
+
+	font: inherit;
+	font-size: 14.5px;
+	color: var(--wcai-ink);
+	background: var(--wcai-surface-sunken);
+	border: 1px solid var(--wcai-line);
+	border-radius: 999px;
+	outline: none;
+
+	transition: border-color 0.16s ease, background-color 0.16s ease,
+		box-shadow 0.16s ease;
+}
+
+.wcai-input::placeholder {
+	color: var(--wcai-ink-muted);
+}
+
+.wcai-input:focus {
+	background: var(--wcai-surface);
+	border-color: var(--wcai-brand);
+	box-shadow: 0 0 0 3px rgba(90, 38, 18, 0.12);
+}
+
+.wcai-send {
+	display: grid;
+	place-items: center;
+	flex: 0 0 auto;
+	width: 44px;
+	height: 44px;
+	padding: 0;
+
+	border: 0;
+	border-radius: 50%;
+	background: var(--wcai-brand);
+	color: var(--wcai-on-brand);
+	cursor: pointer;
+
+	transition: background-color 0.16s ease, opacity 0.16s ease,
+		transform 0.16s var(--wcai-ease);
+}
+
+.wcai-send .wcai-i {
+	/* Nudges the paper plane onto its optical centre. */
+	transform: translate(-1px, 1px);
+}
+
+.wcai-send:hover:not(:disabled) {
+	background: var(--wcai-brand-strong);
+}
+
+.wcai-send:active:not(:disabled) {
+	transform: scale(0.94);
+}
+
+.wcai-send:disabled {
+	opacity: 0.34;
+	cursor: default;
+}
+
+.wcai-send:focus-visible {
+	outline: 2px solid var(--wcai-brand);
+	outline-offset: 2px;
+}
+
+/* ================================================================ footnote */
+
+.wcai-footnote {
+	padding: 0 var(--wcai-sp-4) var(--wcai-sp-3);
+	font-size: 11px;
+	line-height: 1.4;
+	text-align: center;
+	color: var(--wcai-ink-muted);
+	background: var(--wcai-surface);
+}
+
+/* ================================================================== mobile */
+
+@media (max-width: 480px) {
+	.wcai-panel {
+		right: 0;
+		left: 0;
+		bottom: 0;
+		width: 100%;
+		max-width: none;
+		height: 100dvh;
+		max-height: 100dvh;
+		border-radius: 0;
+	}
+
+	.wcai {
+		--wcai-offset-side: 16px;
+	}
+
+	.wcai-launcher {
+		width: 56px;
+		height: 56px;
+	}
+
+	/* A pill this close to the thumb bar earns a little less height. */
+	.wcai--both .wcai-launcher,
+	.wcai--text .wcai-launcher {
+		height: 50px;
+		padding: 0 18px;
+	}
+
+	.wcai-launcher-label {
+		font-size: 14px;
+	}
+
+	.wcai.is-open .wcai-launcher {
+		/* The full-screen sheet carries its own close button. */
+		display: none;
+	}
+
+	.wcai-header {
+		padding-top: max(var(--wcai-sp-4), env(safe-area-inset-top));
+	}
+
+	.wcai-footnote {
+		padding-bottom: max(var(--wcai-sp-3), env(safe-area-inset-bottom));
+	}
+}
+
+/* ========================================================== accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+	.wcai *,
+	.wcai *::before,
+	.wcai *::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+	}
+}
+
+@media (prefers-contrast: more) {
+	.wcai-row--assistant .wcai-msg,
+	.wcai-input {
+		border-color: var(--wcai-ink-muted);
+	}
+
+	.wcai-status {
+		color: rgba(255, 255, 255, 0.92);
+	}
+}
