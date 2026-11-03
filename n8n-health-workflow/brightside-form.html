@@ -1,0 +1,301 @@
+<title>Brightside Dental Appointment Request</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Figtree:wght@400;500;600&display=swap">
+<style>
+  /* Layout: single centered form column beside a slim practice-details panel; stacks on phones. */
+  :root {
+    --bg: #eef3f5;
+    --surface: #ffffff;
+    --ink: #14282f;
+    --muted: #556b73;
+    --line: #cfdce1;
+    --accent: #0b6e72;
+    --accent-ink: #ffffff;
+    --accent-soft: #dcefef;
+    --danger: #a3262a;
+    --ok: #1d6b45;
+    --font-display: "DM Serif Display", Georgia, "Times New Roman", serif;
+    --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1c21; --surface: #16272d; --ink: #e6f0f2; --muted: #94aab2; --line: #2b4048;
+      --accent: #46b8bc; --accent-ink: #072326; --accent-soft: #1b3a3e; --danger: #ff8a8d; --ok: #6fd3a0;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1c21; --surface: #16272d; --ink: #e6f0f2; --muted: #94aab2; --line: #2b4048;
+    --accent: #46b8bc; --accent-ink: #072326; --accent-soft: #1b3a3e; --danger: #ff8a8d; --ok: #6fd3a0;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.55;
+    padding-block: 40px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: 32px;
+    align-items: start;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 32px;
+    min-width: 0;
+  }
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 2rem;
+    line-height: 1.15;
+    margin: 0 0 8px;
+    text-wrap: balance;
+  }
+  .lede { color: var(--muted); margin: 0 0 28px; max-width: 52ch; }
+  form { display: grid; gap: 20px; }
+  .field { display: grid; gap: 6px; min-width: 0; }
+  label, .legend {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .req { color: var(--accent); }
+  input, textarea {
+    font: inherit;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 11px 12px;
+    width: 100%;
+    min-width: 0;
+  }
+  textarea { min-height: 130px; resize: vertical; }
+  input:focus-visible, textarea:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--danger); }
+  .err { color: var(--danger); font-size: 0.85rem; min-height: 1.2em; margin: 0; }
+  .privacy {
+    font-size: 0.88rem;
+    color: var(--muted);
+    background: var(--accent-soft);
+    border-radius: 6px;
+    padding: 10px 12px;
+    margin: 0;
+  }
+  button.submit {
+    font: inherit;
+    font-weight: 600;
+    background: var(--accent);
+    color: var(--accent-ink);
+    border: 0;
+    border-radius: 6px;
+    padding: 13px 20px;
+    cursor: pointer;
+    justify-self: start;
+  }
+  button.submit:hover { filter: brightness(1.08); }
+  button.submit:disabled { opacity: 0.6; cursor: default; }
+  .status { margin: 0; font-size: 0.92rem; }
+  .status.bad { color: var(--danger); }
+  .done h2 { font-family: var(--font-display); font-weight: 400; font-size: 1.6rem; margin: 0 0 8px; }
+  .done p { margin: 0 0 16px; max-width: 50ch; }
+  .ref { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.9rem; }
+  button.again {
+    font: inherit; color: var(--accent); background: none; border: 1px solid var(--accent);
+    border-radius: 6px; padding: 9px 16px; cursor: pointer;
+  }
+  aside { display: grid; gap: 20px; font-size: 0.92rem; min-width: 0; }
+  aside h2 {
+    font-size: 0.8rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 6px;
+  }
+  aside p, aside ul { margin: 0; padding: 0; list-style: none; }
+  aside li { padding-block: 2px; }
+  .hours { display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; font-variant-numeric: tabular-nums; }
+  .demo { font-size: 0.8rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
+  @media (max-width: 760px) {
+    .wrap { grid-template-columns: minmax(0, 1fr); }
+    .card { padding: 22px; }
+    body { padding-block: 20px; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    button.submit { transition: filter 0.15s; }
+  }
+</style>
+
+<div class="wrap">
+  <main class="card">
+    <div id="formView">
+      <h1>Request an appointment</h1>
+      <p class="lede">Tell us how we can help. The Brightside Dental team will get back to you by email.</p>
+
+      <form id="requestForm" novalidate>
+        <div class="field">
+          <label for="fullName">Full name <span class="req">*</span></label>
+          <input id="fullName" name="fullName" type="text" autocomplete="name" required>
+          <p class="err" id="fullNameErr" aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <label for="email">Email <span class="req">*</span></label>
+          <input id="email" name="email" type="email" autocomplete="email" inputmode="email" required>
+          <p class="err" id="emailErr" aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel">
+        </div>
+        <div class="field">
+          <label for="message">How can we help? <span class="req">*</span></label>
+          <textarea id="message" name="message" required placeholder="For example: I'd like to ask about Invisalign, or I need a cleaning next week."></textarea>
+          <p class="err" id="messageErr" aria-live="polite"></p>
+        </div>
+        <p class="privacy">Please don't include detailed medical information. If you have severe pain, swelling or bleeding, call us now at (512) 555-0142.</p>
+        <button class="submit" id="submitBtn" type="submit">Send request</button>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <div class="done" id="doneView" hidden>
+      <h2>Request received</h2>
+      <p id="doneText">Thank you. We have your request and will be in touch by email.</p>
+      <p class="ref" id="doneRef"></p>
+      <button class="again" id="againBtn" type="button">Send another request</button>
+    </div>
+  </main>
+
+  <aside>
+    <section>
+      <h2>Brightside Dental</h2>
+      <p>Austin, TX<br>(512) 555-0142</p>
+    </section>
+    <section>
+      <h2>Hours</h2>
+      <div class="hours"><span>Mon–Fri</span><span>8:00 am – 5:00 pm</span><span>Sat–Sun</span><span>Closed</span></div>
+    </section>
+    <section>
+      <h2>Services</h2>
+      <ul>
+        <li>Cleanings</li>
+        <li>Whitening</li>
+        <li>Invisalign</li>
+        <li>Implants</li>
+        <li>Emergency visits</li>
+      </ul>
+    </section>
+    <p class="demo">Brightside Dental is a fictional demo practice.</p>
+  </aside>
+</div>
+
+<script>
+(function () {
+  var form = document.getElementById('requestForm');
+  var btn = document.getElementById('submitBtn');
+  var statusEl = document.getElementById('status');
+  var formView = document.getElementById('formView');
+  var doneView = document.getElementById('doneView');
+  var fields = {
+    fullName: document.getElementById('fullName'),
+    email: document.getElementById('email'),
+    message: document.getElementById('message')
+  };
+
+  function setErr(key, text) {
+    document.getElementById(key + 'Err').textContent = text;
+    if (text) fields[key].setAttribute('aria-invalid', 'true');
+    else fields[key].removeAttribute('aria-invalid');
+  }
+
+  function validate() {
+    var ok = true;
+    var name = fields.fullName.value.trim();
+    var email = fields.email.value.trim();
+    var msg = fields.message.value.trim();
+    setErr('fullName', name ? '' : 'Enter your full name.');
+    setErr('email', /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ? '' : 'Enter a valid email address, like name@example.com.');
+    setErr('message', msg ? '' : 'Tell us briefly how we can help.');
+    if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || !msg) ok = false;
+    return ok;
+  }
+
+  function showStatus(text, bad) {
+    statusEl.textContent = text;
+    statusEl.className = 'status' + (bad ? ' bad' : '');
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    showStatus('', false);
+    if (!validate()) {
+      var first = form.querySelector('[aria-invalid="true"]');
+      if (first) first.focus();
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    try {
+      var db = window.claude && (await window.claude.use('db'));
+      if (!db) {
+        showStatus('This page cannot save requests in this view. Open it while signed in to claude.ai and try again.', true);
+        return;
+      }
+      var user = await window.claude.use('user');
+      var uid = user && (await user.id());
+      if (!uid) {
+        showStatus('This page cannot save requests in this view. Open it while signed in to claude.ai and try again.', true);
+        return;
+      }
+      var leadId = 'L' + Date.now();
+      await db.doc('inquiries/' + uid + '/items/' + leadId).set({
+        lead_id: leadId,
+        created_at: new Date().toISOString(),
+        name: fields.fullName.value.trim(),
+        email: fields.email.value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        message: fields.message.value.trim(),
+        status: 'New',
+        source: 'Website form'
+      });
+      document.getElementById('doneRef').textContent = 'Reference ' + leadId;
+      formView.hidden = true;
+      doneView.hidden = false;
+    } catch (err) {
+      var code = err && err.code;
+      var msg = code === 'quota_exceeded'
+        ? 'This form has reached its storage limit. Please call (512) 555-0142 instead.'
+        : 'Your request was not sent. Check your connection and try again.';
+      showStatus(msg, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Send request';
+    }
+  });
+
+  document.getElementById('againBtn').addEventListener('click', function () {
+    form.reset();
+    ['fullName', 'email', 'message'].forEach(function (k) { setErr(k, ''); });
+    doneView.hidden = true;
+    formView.hidden = false;
+    fields.fullName.focus();
+  });
+})();
+</script>
